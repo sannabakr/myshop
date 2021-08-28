@@ -76,7 +76,7 @@ class ProductItem extends StatelessWidget {
                   action: SnackBarAction(
                     label: 'UNDO',
                     onPressed: () {
-                      cart.undo(productData.id);
+                      cart.undo(productData.id.toString());
                     },
                   ),
                 ),
