@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart.dart';
+import 'dart:io' show Platform;
 
 class CartsItem extends StatelessWidget {
   final String id;
@@ -18,6 +20,50 @@ class CartsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
+      confirmDismiss: (direction) {
+        return showDialog(
+          context: context,
+          builder: (ctx) => Platform.isIOS
+              ? CupertinoAlertDialog(
+                  title: Text('Are you Sure?'),
+                  content:
+                      Text('Do you want to remove the item from the cart?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop(true);
+                      },
+                      child: Text('Yes'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop(false);
+                      },
+                      child: Text('No'),
+                    ),
+                  ],
+                )
+              : AlertDialog(
+                  title: Text('Are you Sure?'),
+                  content:
+                      Text('Do you want to remove the item from the cart?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop(true);
+                      },
+                      child: Text('Yes'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop(false);
+                      },
+                      child: Text('No'),
+                    ),
+                  ],
+                ),
+        );
+      },
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
         Provider.of<Cart>(
@@ -49,8 +95,11 @@ class CartsItem extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(
               child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: FittedBox(child: Text('\$$price'))),
+                padding: const EdgeInsets.all(5),
+                child: FittedBox(
+                  child: Text('\$$price'),
+                ),
+              ),
             ),
             title: Text(title),
             subtitle: Text('Total \$${(price * quantity)}'),
