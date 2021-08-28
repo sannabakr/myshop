@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -97,7 +98,7 @@ class Products with ChangeNotifier {
     }
   }
 
-  Future<void> updateProduct(String? id, Product newProduct) async {
+  Future<void> updateProduct(String id, Product newProduct) async {
 
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
@@ -113,7 +114,7 @@ class Products with ChangeNotifier {
       _items[prodIndex] = newProduct;
       notifyListeners();
     } else {
-      print('...');
+      print('the item does not exist');
     }
   }
 
@@ -124,6 +125,7 @@ class Products with ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
       );
+
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
@@ -134,6 +136,7 @@ class Products with ChangeNotifier {
             imageUrl: prodData['imageUrl'],
             price: prodData['price'],
             isFavorite: prodData['isFavorite']));
+            
       });
       _items = loadedProducts;
       notifyListeners();
