@@ -1,4 +1,4 @@
-name: my_app
+name: my_shop
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.0.0
   intl: ^0.17.0
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:
