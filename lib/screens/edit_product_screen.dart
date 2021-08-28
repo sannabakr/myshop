@@ -23,29 +23,47 @@ class _EditProductState extends State<EditProductScreen> {
     imageUrl: '',
     isFavorite: false,
   );
+  
+
   var _initValues = {
     'title': '',
     'description': '',
     'price': '',
     'imageUrl': '',
-    'id':'',
   };
 
   var _isLoading = false;
   @override
   void initState() {
     _imageUrlFocusNode.addListener(_updateImageUrl);
+    // Future.delayed(Duration.zero).then((_) {
+    //   final productId = ModalRoute.of(context)!.settings.arguments as String?;
+    //   if (productId != null) {
+    //     var _editedProduct =
+    //         Provider.of<Products>(context, listen: false).findById(productId);
+    //     _initValues = {
+    //       'title': _editedProduct.title,
+    //       'description': _editedProduct.description,
+    //       'price': _editedProduct.price.toString(),
+    //       //'imageUrl': _editedProduct.imageUrl,
+    //       'imageUrl': '',
+    //     };
+    //     _imageUrlController.text = _editedProduct.imageUrl;
+    //     print(_editedProduct.id);
+    //   }
+      
+    //  });
+
     super.initState();
   }
 
   var _isInit = true;
-
   @override
   void didChangeDependencies() {
     if (_isInit) {
       final productId = ModalRoute.of(context)!.settings.arguments as String?;
       if (productId != null) {
-        final _editedProduct =
+        _editedProduct =
             Provider.of<Products>(context, listen: false).findById(productId);
         _initValues = {
           'title': _editedProduct.title,
@@ -53,12 +71,14 @@ class _EditProductState extends State<EditProductScreen> {
           'price': _editedProduct.price.toString(),
           //'imageUrl': _editedProduct.imageUrl,
           'imageUrl': '',
-          'id':_editedProduct.id.toString(),
         };
         _imageUrlController.text = _editedProduct.imageUrl;
+        print(_editedProduct.id);
       }
+      _isInit = false;
     }
-    _isInit = false;
+    
+    print(_editedProduct.id);
     super.didChangeDependencies();
   }
 
@@ -97,7 +117,7 @@ class _EditProductState extends State<EditProductScreen> {
     final isValid = _form.currentState!.validate();
     if (isValid) {
       _form.currentState!.save();
-      if (!(_initValues['id'] ==  '')) {
+      if (_editedProduct.id!=null) {
         await Provider.of<Products>(
           context,
           listen: false,
