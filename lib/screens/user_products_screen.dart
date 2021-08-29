@@ -12,7 +12,6 @@ class UserProductsScreen extends StatelessWidget {
       context,
       listen: false,
     ).fetchAndSetProducts();
-    
   }
 
   @override

@@ -121,7 +121,7 @@ class _EditProductState extends State<EditProductScreen> {
         await Provider.of<Products>(
           context,
           listen: false,
-        ).updateProduct(_initValues['id']!, _editedProduct);
+        ).updateProduct(_editedProduct.id!, _editedProduct);
       } else {
         try {
           await Provider.of<Products>(

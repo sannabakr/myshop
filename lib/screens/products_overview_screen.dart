@@ -19,7 +19,7 @@ class ProductsOverviewScreen extends StatefulWidget {
 }
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
-  
+  var hasProducts = true;
 
   // @override
   // void initState() {
@@ -29,24 +29,58 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
 
   //   super.initState();
   // }
+
   var _isInit = true;
   var _showOnlyFavorites = false;
   var _isLoading = false;
   @override
-  void didChangeDependencies() {
-    if (_isInit) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+  void didChangeDependencies() async {
+    try {
+      if (_isInit) {
         setState(() {
-          _isLoading = false;
+          _isLoading = true;
         });
-      });
+
+        await Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+          setState(() {
+            _isLoading = false;
+          });
+        });
+      }
+    } catch (error) {
+       if (error.toString() ==
+           'type \'Null\' is not a subtype of type \'Map<String, dynamic>\' in type cast') {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('No Products to show!'),
+          content: Text('Please try again later or add products'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  hasProducts = false;
+                  _isLoading = false;
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Ok!'),
+            )
+          ],
+        ),
+      );
+      }
+      print(error);
     }
     _isInit = false;
     super.didChangeDependencies();
+  }
+
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<Products>(
+      context,
+      listen: false,
+    ).fetchAndSetProducts();
   }
 
   @override
@@ -99,7 +133,10 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : ProductsGrid(_showOnlyFavorites),
+          : RefreshIndicator(
+              child: ProductsGrid(_showOnlyFavorites, this.hasProducts),
+              onRefresh: () => _refreshProducts(context),
+            ),
     );
   }
 }
