@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './screens/auth_screen.dart';
 import 'package:provider/provider.dart';
 import 'screens/cart_screen.dart';
 import 'screens/product_detail_screen.dart';
@@ -37,9 +38,9 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.amber,
           fontFamily: 'RobotoCondensed',
         ),
-        initialRoute: '/',
+        //initialRoute: '/',
+        home: AuthScreen(),
         routes: {
-          '/': (ctx) => ProductsOverviewScreen(),
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
           CartScreen.routeName: (ctx) => CartScreen(),
           OrdersScreen.routeName: (ctx) => OrdersScreen(),
