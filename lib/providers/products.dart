@@ -93,6 +93,7 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
+          'userId':_userId,
         }),
       );
       final newProduct = Product(
@@ -132,9 +133,10 @@ class Products with ChangeNotifier {
     }
   }
 
-  Future<void> fetchAndSetProducts() async {
+  Future<void> fetchAndSetProducts([bool  filterByUser=false]) async {
+    final filterString = filterByUser ? '&orderBy="userId"&equalTo="$_userId"' : '';
     var url =
-        'https://my-shop-9e159-default-rtdb.firebaseio.com/products.json?auth=$_authToken';
+        'https://my-shop-9e159-default-rtdb.firebaseio.com/products.json?auth=$_authToken$filterString';
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -160,8 +162,10 @@ class Products with ChangeNotifier {
       });
       _items = loadedProducts;
       notifyListeners();
+      print(favoriteResponse.body);
     } catch (error) {
       throw error;
+      
     }
   }
 
