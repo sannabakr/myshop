@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import './screens/auth_screen.dart';
 import 'package:provider/provider.dart';
 import 'screens/cart_screen.dart';
@@ -10,6 +11,7 @@ import 'screens/products_overview_screen.dart';
 import 'providers/orders.dart';
 import './providers/products.dart';
 import './providers/cart.dart';
+import './providers/auth.dart';
 
 void main() {
   runApp(MyApp());
@@ -21,32 +23,41 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (ctx) => Auth(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Products>(
           create: (ctx) => Products(),
+          update: (_, auth, previousProducts) =>
+              previousProducts!..update(auth.token, previousProducts.items, auth.userId,),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Cart(),
         ),
-        ChangeNotifierProvider(
+        ChangeNotifierProxyProvider<Auth, Orders>(
           create: (ctx) => Orders(),
+          update: (_, auth, previousOrders) =>
+              previousOrders!..update(auth.token, previousOrders.orders,),
         ),
       ],
-      child: MaterialApp(
-        title: 'My Shop',
-        theme: ThemeData(
-          backgroundColor: Colors.amber[50],
-          primarySwatch: Colors.purple,
-          accentColor: Colors.amber,
-          fontFamily: 'RobotoCondensed',
+      child: Consumer<Auth>(
+        builder: (ctx, auth, _) => MaterialApp(
+          title: 'My Shop',
+          theme: ThemeData(
+            backgroundColor: Colors.amber[50],
+            primarySwatch: Colors.purple,
+            accentColor: Colors.amber,
+            fontFamily: 'RobotoCondensed',
+          ),
+          //initialRoute: '/',
+          home: auth.isAuth ? ProductsOverviewScreen() : AuthScreen(),
+          routes: {
+            ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+            CartScreen.routeName: (ctx) => CartScreen(),
+            OrdersScreen.routeName: (ctx) => OrdersScreen(),
+            UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+            EditProductScreen.routeName: (ctx) => EditProductScreen(),
+          },
         ),
-        //initialRoute: '/',
-        home: AuthScreen(),
-        routes: {
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-          CartScreen.routeName: (ctx) => CartScreen(),
-          OrdersScreen.routeName: (ctx) => OrdersScreen(),
-          UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeName: (ctx)=>EditProductScreen(),
-        },
       ),
     );
   }

@@ -48,8 +48,7 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         });
       }
     } catch (error) {
-       if (error.toString() ==
-           'type \'Null\' is not a subtype of type \'Map<String, dynamic>\' in type cast') {
+       if (error.toString().contains('Null')) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../screens/product_detail_screen.dart';
 import '../providers/product.dart';
 import '../providers/cart.dart';
+import '../providers/auth.dart';
 
 class ProductItem extends StatelessWidget {
   // final String imageUrl;
@@ -17,6 +18,10 @@ class ProductItem extends StatelessWidget {
       listen: false,
     );
     final cart = Provider.of<Cart>(
+      context,
+      listen: false,
+    );
+    final authData = Provider.of<Auth>(
       context,
       listen: false,
     );
@@ -44,7 +49,7 @@ class ProductItem extends StatelessWidget {
               ),
               color: Theme.of(context).accentColor,
               onPressed: () {
-                productData.toggleFavoriteStatus();
+                productData.toggleFavoriteStatus(authData.token, authData.userId,);
               },
             ),
           ),

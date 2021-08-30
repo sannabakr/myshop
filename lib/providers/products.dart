@@ -42,12 +42,26 @@ class Products with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     // ),
   ];
+  String? _authToken;
+  String? _userId;
+
+  void update(authToken, List<Product>? items, String userId) {
+    if (items == null) {
+      _items = [];
+    } else {
+      _items = items;
+    }
+    _authToken = authToken;
+    _userId = userId;
+    notifyListeners();
+  }
 
 // var _showFavoritesOnly = false;
   List<Product> get items {
     // if(_showFavoritesOnly){
     // return _items.where((prodItem) => prodItem.isFavorite).toList();
     // }
+
     return [..._items];
   }
 
@@ -69,8 +83,8 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
   Future<void> addProduct(Product product) async {
-    const url =
-        'https://my-shop-9e159-default-rtdb.firebaseio.com/products.json';
+    final url =
+        'https://my-shop-9e159-default-rtdb.firebaseio.com/products.json?auth=$_authToken';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -79,7 +93,6 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
         }),
       );
       final newProduct = Product(
@@ -104,7 +117,7 @@ class Products with ChangeNotifier {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
       final url =
-          'https://my-shop-9e159-default-rtdb.firebaseio.com/products/$id.json';
+          'https://my-shop-9e159-default-rtdb.firebaseio.com/products/$id.json?auth=$_authToken';
       await http.patch(Uri.parse(url),
           body: json.encode({
             'title': newProduct.title,
@@ -120,23 +133,30 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fetchAndSetProducts() async {
-    const url =
-        'https://my-shop-9e159-default-rtdb.firebaseio.com/products.json';
+    var url =
+        'https://my-shop-9e159-default-rtdb.firebaseio.com/products.json?auth=$_authToken';
     try {
       final response = await http.get(
         Uri.parse(url),
       );
+      
 
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
+ url =
+        'https://my-shop-9e159-default-rtdb.firebaseio.com/userFavorites/$_userId.json?auth=$_authToken';
+
+      final favoriteResponse = await http.get(Uri.parse(url));
+      final favoriteData= json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
-            id: prodId,
-            title: prodData['title'],
-            description: prodData['description'],
-            imageUrl: prodData['imageUrl'],
-            price: prodData['price'],
-            isFavorite: prodData['isFavorite']));
+          id: prodId,
+          title: prodData['title'],
+          description: prodData['description'],
+          imageUrl: prodData['imageUrl'],
+          price: prodData['price'],
+          isFavorite: favoriteData==null? false: favoriteData[prodId]?? false,
+        ));
       });
       _items = loadedProducts;
       notifyListeners();
@@ -147,7 +167,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final url =
-        'https://my-shop-9e159-default-rtdb.firebaseio.com/products/$id.json';
+        'https://my-shop-9e159-default-rtdb.firebaseio.com/products/$id.json?auth=$_authToken';
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     Product? existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
@@ -155,7 +175,6 @@ class Products with ChangeNotifier {
     final response = await http.delete(Uri.parse(url));
 
     if (response.statusCode >= 400) {
-
       _items.insert(existingProductIndex, existingProduct);
       notifyListeners();
       throw HttpException('Could not delete product.');
