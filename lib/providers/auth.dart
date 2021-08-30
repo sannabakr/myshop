@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Auth with ChangeNotifier {
   String? _token;
@@ -36,6 +37,13 @@ class Auth with ChangeNotifier {
       )));
       _autoLogout();
       notifyListeners();
+      final prefs = await SharedPreferences.getInstance();
+      final userData = json.encode({
+        'token': _token,
+        'userId': _userId,
+        'expiryDate': _expiryDate!.toIso8601String(),
+      });
+      prefs.setString('userData', userData);
     } catch (error) {
       throw error;
     }
@@ -66,7 +74,7 @@ class Auth with ChangeNotifier {
     return _userId;
   }
 
-  void logOut() {
+  Future<void> logOut() async {
     _token = null;
     _userId = '';
     _expiryDate = null;
@@ -74,6 +82,9 @@ class Auth with ChangeNotifier {
       _authTimer!.cancel();
     }
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    //prefs.remove('userData');
+    prefs.clear();
   }
 
   void _autoLogout() {
@@ -82,5 +93,29 @@ class Auth with ChangeNotifier {
     }
     final timeToExpiry = _expiryDate!.difference(DateTime.now()).inSeconds;
     _authTimer = Timer(Duration(seconds: timeToExpiry), logOut);
+  }
+
+  Future<bool> tryAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if  (!prefs.containsKey('userData')){
+      return false;
+    }
+    final prefsData = prefs.getString('userData');
+    final extractedUserData = json.decode(prefsData!) as Map<String, Object>;
+    final  extractedExpiryDate = extractedUserData['expiryDate'] as String;
+    final DateTime? expiryDate = DateTime.parse(extractedExpiryDate);
+
+    if (expiryDate!.isBefore(DateTime.now())){
+      return false;
+    }
+    _token = extractedUserData['token'] as String;
+    _userId = extractedUserData['userId'] as String;
+    _expiryDate = expiryDate;
+
+    notifyListeners();
+    _autoLogout();
+    return true;
+
+
   }
 }
