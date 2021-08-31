@@ -38,12 +38,13 @@ class Auth with ChangeNotifier {
       _autoLogout();
       notifyListeners();
       final prefs = await SharedPreferences.getInstance();
-      final userData = json.encode({
+      final userData = jsonEncode({
         'token': _token,
         'userId': _userId,
         'expiryDate': _expiryDate!.toIso8601String(),
       });
       prefs.setString('userData', userData);
+      print(prefs.setString('userData', userData));
     } catch (error) {
       throw error;
     }
@@ -96,26 +97,31 @@ class Auth with ChangeNotifier {
   }
 
   Future<bool> tryAutoLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    if  (!prefs.containsKey('userData')){
+    Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _prefs;
+    //final SharedPreferences prefsDatafirst = json.decode(prefs);
+    if (!prefs.containsKey('userData')) {
+      print('it was false');
       return false;
     }
-    final prefsData = prefs.getString('userData');
-    final extractedUserData = json.decode(prefsData!) as Map<String, Object>;
-    final  extractedExpiryDate = extractedUserData['expiryDate'] as String;
+    String? prefsData = prefs.getString('userData');
+    final extractedUserData = jsonDecode(prefsData!);
+
+    final extractedExpiryDate = extractedUserData['expiryDate'] as String;
     final DateTime? expiryDate = DateTime.parse(extractedExpiryDate);
 
-    if (expiryDate!.isBefore(DateTime.now())){
+    if (expiryDate!.isBefore(DateTime.now())) {
+      print('token expired');
       return false;
     }
     _token = extractedUserData['token'] as String;
     _userId = extractedUserData['userId'] as String;
     _expiryDate = expiryDate;
+    print('this is running');
 
     notifyListeners();
     _autoLogout();
+    print('this is the token ${extractedUserData['token']}');
     return true;
-
-
   }
 }

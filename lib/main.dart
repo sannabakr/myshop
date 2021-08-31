@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import './screens/auth_screen.dart';
 import 'package:provider/provider.dart';
 import 'screens/cart_screen.dart';
@@ -58,7 +57,6 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.amber,
             fontFamily: 'RobotoCondensed',
           ),
-          //initialRoute: '/',
           home: auth.isAuth
               ? ProductsOverviewScreen()
               : FutureBuilder(
